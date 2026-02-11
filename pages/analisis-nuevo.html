@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Análisis - DashBoard</title>
+    
+    <!-- CDN Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/analisis.css">
+    
+    <style>
+        /* Ajustes para integración con sidebar */
+        .main-content .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        .main-content .header {
+            background: white;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📊</div>
+                <h2>DashBoard</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="icon">🏠</span>
+                    <span class="text">Inicio</span>
+                </a>
+                <a href="analisis-lista.html" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span class="text">Mis Análisis</span>
+                </a>
+                <a href="analisis-nuevo.html" class="nav-item active">
+                    <span class="icon">➕</span>
+                    <span class="text">Nuevo Análisis</span>
+                </a>
+                <a href="usuarios.html" class="nav-item">
+                    <span class="icon">👥</span>
+                    <span class="text">Usuarios</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Cargando...</div>
+                        <div class="user-role">Usuario</div>
+                    </div>
+                </div>
+                <button class="btn-logout" id="btnLogout">🚪 Cerrar Sesión</button>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <div class="container">
+                <div class="header">
+                    <h1>📊 Sistema de Análisis de Facturas</h1>
+                    <p>Carga tu archivo Excel para visualizar las tendencias y métricas</p>
+                </div>
+
+                <!-- Upload Section -->
+                <div id="uploadSection" class="upload-section">
+                    <div class="upload-box" id="uploadBox">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Arrastra tu archivo Excel aquí</div>
+                        <div class="upload-hint">o haz clic para seleccionar</div>
+                        <div class="upload-hint" style="margin-top: 15px; font-weight: 600;">
+                            Formato requerido: Columnas VAL_PACIEN, VAL_CONTRA, VAL_TOTAL • .xlsx o .xls
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls">
+                    <button class="btn" id="selectBtn">Seleccionar Archivo</button>
+                    
+                    <div id="message" class="message"></div>
+                    <div class="loader" id="loader"></div>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div id="dashboard_content" style="display: none;">
+                    <div id="dashboard" style="display: none;">
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label for="filtroRegimen">📋 Filtrar por Régimen</label>
+                                <select id="filtroRegimen">
+                                    <option value="TODOS">Todos los Regímenes</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filtroAdministradora">🏢 Filtrar por Administradora</label>
+                                <select id="filtroAdministradora">
+                                    <option value="TODOS">Todas las Administradoras</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filtroContrato">📑 Filtrar por Contrato</label>
+                                <select id="filtroContrato" disabled>
+                                    <option value="TODOS">Seleccione una administradora primero</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="fechaInicio">📅 Fecha Inicio</label>
+                                <input type="date" id="fechaInicio" class="date-input">
+                            </div>
+                            <div class="filter-group">
+                                <label for="fechaFin">📅 Fecha Fin</label>
+                                <input type="date" id="fechaFin" class="date-input">
+                            </div>
+                            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                                <button class="btn" id="btnLimpiarFechas" style="width: 100%;">🔄 Limpiar Fechas</button>
+                            </div>
+                        </div>
+
+                        <div class="kpis">
+                            <div class="kpi-card" style="grid-column: span 2;">
+                                <div class="kpi-icon">💰</div>
+                                <div class="kpi-label">Totales de Facturación</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                                    <div>
+                                        <div style="font-size: 0.85em; opacity: 0.9;">Valor Total</div>
+                                        <div class="kpi-value" style="font-size: 1.8em;" id="valorTotal">$0</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.85em; opacity: 0.9;">Valor Contrato</div>
+                                        <div class="kpi-value" style="font-size: 1.8em;" id="valorContrato">$0</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.85em; opacity: 0.9;">Valor Paciente</div>
+                                        <div class="kpi-value" style="font-size: 1.8em;" id="valorPaciente">$0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-card green">
+                                <div class="kpi-icon">📄</div>
+                                <div class="kpi-label">Total Facturas</div>
+                                <div class="kpi-value" id="totalFacturas">0</div>
+                            </div>
+                            <div class="kpi-card orange">
+                                <div class="kpi-icon">📊</div>
+                                <div class="kpi-label">Promedio por Factura</div>
+                                <div class="kpi-value" id="promedioFactura">$0</div>
+                            </div>
+                            <div class="kpi-card purple">
+                                <div class="kpi-icon">📈</div>
+                                <div class="kpi-label">Servicio Más Facturado</div>
+                                <div class="kpi-value" id="servicioTop" style="font-size: 1em;">-</div>
+                            </div>
+                        </div>
+
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <h2>📈 Tendencia de Facturación por Fecha</h2>
+                                <div class="chart-container">
+                                    <canvas id="chartTendencia"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h2>🏢 Facturación por Administradora</h2>
+                                <div class="chart-container">
+                                    <canvas id="chartAdministradoras"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h2>📋 Distribución por Régimen</h2>
+                                <div class="chart-container">
+                                    <canvas id="chartRegimen"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h2>🏥 Top 10 Servicios Más Facturados</h2>
+                                <div class="chart-container">
+                                    <canvas id="chartServicios"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card" id="chartContratosCard" style="display: none;">
+                                <h2>📑 Distribución por Contrato</h2>
+                                <div class="chart-container">
+                                    <canvas id="chartContratos"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="details-table">
+                            <h2 style="margin-bottom: 20px; color: #333;">📋 Facturas Registradas</h2>
+                            
+                            <!-- Controles de paginación arriba -->
+                            <div class="pagination-container" style="margin-bottom: 15px;">
+                                <div class="pagination-info">
+                                    <span class="pagination-text">Mostrar:</span>
+                                    <select id="rowsPerPage">
+                                        <option value="5">5</option>
+                                        <option value="10" selected>10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <span class="pagination-text">registros por página</span>
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="pagination-btn" id="btnPrimera">⏮️ Primera</button>
+                                    <button class="pagination-btn" id="btnAnterior">◀️ Anterior</button>
+                                    <span class="pagination-text" id="paginaActual">Página 1 de 1</span>
+                                    <button class="pagination-btn" id="btnSiguiente">Siguiente ▶️</button>
+                                    <button class="pagination-btn" id="btnUltima">Última ⏭️</button>
+                                </div>
+                            </div>
+                            
+                            <table id="tablaFacturas">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-column="factura" data-type="text">Factura</th>
+                                        <th class="sortable sort-asc" data-column="fecha" data-type="date">Fecha</th>
+                                        <th class="sortable" data-column="administradora" data-type="text">Administradora</th>
+                                        <th class="sortable" data-column="numeroContrato" data-type="text">Contrato</th>
+                                        <th class="sortable" data-column="regimen" data-type="text">Régimen</th>
+                                        <th class="sortable" data-column="valorPaciente" data-type="number">Valor Paciente</th>
+                                        <th class="sortable" data-column="valorContrato" data-type="number">Valor Contrato</th>
+                                        <th class="sortable" data-column="valorTotal" data-type="number">Valor Total</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <button class="reset-btn" id="resetBtn" style="display: none;">🔄 Cargar Otro Archivo</button>
+                    <button class="reset-btn" id="downloadJsonBtn" style="display: none; bottom: 90px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">📥 Descargar JSON</button>
+                </div>
+
+                <!-- Modal para detalles de factura -->
+                <div id="modalDetalle" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>📄 Detalle de Factura</h2>
+                            <span class="close">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="modal-info" id="modalInfo"></div>
+                            
+                            <!-- Totales Calculados -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 0.85em; color: #666; font-weight: 600;">Total Factura</div>
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #667eea;" id="modalTotalFactura">$0</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 0.85em; color: #666; font-weight: 600;">Total Contrato</div>
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #11998e;" id="modalTotalContrato">$0</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 0.85em; color: #666; font-weight: 600;">Total Paciente</div>
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #f5576c;" id="modalTotalPaciente">$0</div>
+                                </div>
+                            </div>
+                            
+                            <h3 style="margin-bottom: 15px; color: #333;">Servicios:</h3>
+                            
+                            <!-- Controles de paginación arriba -->
+                            <div class="pagination-container" style="margin-bottom: 15px;">
+                                <div class="pagination-info">
+                                    <span class="pagination-text">Mostrar:</span>
+                                    <select id="rowsPerPageModal">
+                                        <option value="5" selected>5</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                    <span class="pagination-text">servicios por página</span>
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="pagination-btn" id="btnPrimeraModal">⏮️</button>
+                                    <button class="pagination-btn" id="btnAnteriorModal">◀️</button>
+                                    <span class="pagination-text" id="paginaActualModal">Página 1 de 1</span>
+                                    <button class="pagination-btn" id="btnSiguienteModal">▶️</button>
+                                    <button class="pagination-btn" id="btnUltimaModal">⏭️</button>
+                                </div>
+                            </div>
+                            
+                            <table id="tablaServicios" style="margin-top: 0;">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-column="nombre" data-type="text">Servicio</th>
+                                        <th class="sortable" data-column="cantidad" data-type="number">Cantidad</th>
+                                        <th class="sortable" data-column="valorUnitario" data-type="number">Valor Unitario</th>
+                                        <th class="sortable" data-column="valPacien" data-type="number">Valor Paciente</th>
+                                        <th class="sortable" data-column="valContra" data-type="number">Valor Contrato</th>
+                                        <th class="sortable" data-column="valTotal" data-type="number">Valor Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div id="botonesAccion" style="display: none; text-align: center; margin-top: 30px;">
+                    <button class="btn" id="btnGuardarAnalisis" style="margin-right: 10px;">
+                        💾 Guardar Análisis
+                    </button>
+                    <button class="btn" id="btnNuevoArchivo" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        🔄 Cargar Otro Archivo
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/analisis-core.js"></script>
+    <script src="../js/analisis-core-patch.js"></script>
+    <script src="../js/analisis-guardar.js"></script>
+    <script src="../js/analisis-cargar.js"></script>
+    <script src="../js/analisis-editar.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Análisis</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/analisis.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📊</div>
+                <h2>DashBoard</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="icon">🏠</span>
+                    <span class="text">Inicio</span>
+                </a>
+                <a href="analisis-lista.html" class="nav-item active">
+                    <span class="icon">📊</span>
+                    <span class="text">Mis Análisis</span>
+                </a>
+                <a href="analisis-nuevo.html" class="nav-item">
+                    <span class="icon">➕</span>
+                    <span class="text">Nuevo Análisis</span>
+                </a>
+                <a href="usuarios.html" class="nav-item">
+                    <span class="icon">👥</span>
+                    <span class="text">Usuarios</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Cargando...</div>
+                        <div class="user-role">Usuario</div>
+                    </div>
+                </div>
+                <button class="btn-logout" id="btnLogout">🚪 Cerrar Sesión</button>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="page-header">
+                <h1>📊 Mis Análisis</h1>
+                <p>Lista de análisis de facturas guardados</p>
+            </header>
+            <div style="padding: 30px;">
+                <a href="analisis-nuevo.html" class="btn" style="margin-bottom: 20px; display: inline-block; text-decoration: none;">
+                    ➕ Nuevo Análisis
+                </a>
+                
+                <div class="details-table">
+                    <table id="tablaAnalisis">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Análisis</th>
+                                <th>Fecha de Creación</th>
+                                <th>Total Facturas</th>
+                                <th>Valor Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px;">
+                                    <div class="loader" id="loader"></div>
+                                    <span id="mensaje">Cargando análisis...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/analisis-lista.js"></script>
+</body>
+</html>
