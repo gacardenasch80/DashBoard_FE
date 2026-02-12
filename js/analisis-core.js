@@ -764,7 +764,11 @@ function inicializarFiltros() {
     });
 
     // Event listeners para filtros
-    selectRegimen.addEventListener('change', aplicarFiltros);
+    //selectRegimen.addEventListener('change', aplicarFiltros);
+    selectRegimen.addEventListener('change', function() {
+        cargarAdministradoraPorRegimen();
+        aplicarFiltros();
+    });
     selectAdmin.addEventListener('change', function() {
         cargarContratosPorAdministradora();
         aplicarFiltros();
@@ -883,6 +887,39 @@ function inicializarFiltros() {
             actualizarTabla();
         });
     });
+}
+
+function cargarAdministradoraPorRegimen() {
+    const regimenSeleccionada = document.getElementById('filtroRegimen').value;
+    const selectAdministradora = document.getElementById('filtroAdministradora');
+    
+    if (regimenSeleccionada === 'TODOS') {
+        const administradoras = [...new Set(datosOriginales.map(d => d.administradora))].sort();
+        selectAdministradora.innerHTML = '<option value="TODOS">Todas las Administradoras</option>';
+        administradoras.forEach(admin => {
+            const option = document.createElement('option');
+            option.value = admin;
+            option.textContent = admin;
+            selectAdministradora.appendChild(option);
+        });
+        
+    } else {
+        
+        const admonDeLaRegimen = [...new Set(
+            datosOriginales
+                .filter(f => f.regimen === regimenSeleccionada)
+                .map(f => f.administradora)
+        )].sort();
+        
+        selectAdministradora.innerHTML = '<option value="TODOS">Todas las Administradoras</option>';
+        admonDeLaRegimen.forEach(admin => {
+            const option = document.createElement('option');
+            option.value = admin;
+            option.textContent = admin;
+            selectAdministradora.appendChild(option);
+        });
+    }
+    cargarContratosPorAdministradora()
 }
 
 function cargarContratosPorAdministradora() {
